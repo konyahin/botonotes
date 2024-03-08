@@ -29,10 +29,11 @@ def sendMessage(chat, message):
 
 def saveNote(note):
     text = note["message"]["text"]
-    date = note["message"]["date"]
-    file = datetime.datetime.fromtimestamp(date).strftime("%Y-%m-%d-%H%M%S.md")
-    path = os.environ["NOTES_QUEUE"] + "/" + file
+    date = datetime.datetime.fromtimestamp(note["message"]["date"]) \
+        .strftime("# %Y-%m-%d %H:%M:%S\n")
+    path = os.environ["SCRATCH_PATH"]
     with open(path, 'a+') as f:
+        f.write(date)
         f.write(text + "\n\n")
 
 maxid = 0
