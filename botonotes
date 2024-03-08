@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+
+import datetime
+import json
+import os
+import requests
+import subprocess
+
+master = int(subprocess.check_output(["pass", "botonotes/user"]))
+token  = subprocess.check_output(["pass", "botonotes/token"]).decode("utf-8").strip("\n")
+
+def url(method):
+    return "https://api.telegram.org/bot{}/{}".format(token, method)
+
+def getUpdates(maxid):
+    params = {}
+    if maxid:
+        params["offset"] = maxid + 1
+
+    answer = json.loads(requests.get(url("getUpdates"), params = params).content)
+    if (not answer["ok"]):
+        print("Got error: ", answer["description"])
+        exit()
+
+    return answer["result"]
+
+def sendMessage(chat, message):
+    requests.get(url("sendMessage"), params = {"chat_id": chat, "text": message})
+
+def saveNote(note):
+    text = note["message"]["text"]
+    date = note["message"]["date"]
+    file = datetime.datetime.fromtimestamp(date).strftime("%Y-%m-%d-%H%M%S.md")
+    path = os.environ["NOTES_QUEUE"] + "/" + file
+    with open(path, 'a+') as f:
+        f.write(text + "\n\n")
+
+maxid = 0
+notes = 0
+strangers = set()
+
+while True:
+    updates = getUpdates(maxid)
+    if (not updates):
+        break
+
+    for update in updates:
+        id = update["update_id"]
+        if id > maxid:
+            maxid = id
+
+        if "message" not in update:
+            continue
+
+        user = update["message"]["from"]["id"]
+        chat = update["message"]["chat"]["id"]
+
+        if user != master:
+            strangers.add(chat)
+            continue
+
+        saveNote(update)
+        notes += 1
+
+if notes:
+    sendMessage(master, "Got!")
+
+print("Got {} notes.".format(notes))
+
+for stranger in strangers:
+    sendMessage(stranger, "Sorry, this is a private bot.")
+
+print("Greeted {} strangers.".format(len(strangers)))
