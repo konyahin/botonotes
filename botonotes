@@ -64,7 +64,7 @@ while True:
         notes += 1
 
 if notes:
-    sendMessage(master, "Got!")
+    sendMessage(master, "✍🏻")
 
 print("Got {} notes.".format(notes))
 
