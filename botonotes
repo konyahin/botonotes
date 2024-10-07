@@ -6,6 +6,10 @@ import os
 import requests
 import subprocess
 
+if "SCRATCH_PATH" not in os.environ:
+	print("Please, specify SCRATCH_PATH environment variable. Your notes will write to this file.")
+	exit()
+
 master = int(subprocess.check_output(["pass", "botonotes/user"]))
 token  = subprocess.check_output(["pass", "botonotes/token"]).decode("utf-8").strip("\n")
 
