@@ -7,7 +7,7 @@ import requests
 import subprocess
 
 if "SCRATCH_PATH" not in os.environ:
-	print("Please, specify SCRATCH_PATH environment variable. Your notes will write to this file.")
+	print("Please, specify SCRATCH_PATH environment variable. Your notes will be written to this directory.")
 	exit()
 
 master = int(subprocess.check_output(["pass", "botonotes/user"]))
@@ -33,11 +33,10 @@ def sendMessage(chat, message):
 
 def saveNote(note):
     text = note["message"]["text"]
-    date = datetime.datetime.fromtimestamp(note["message"]["date"]) \
-        .strftime("# %Y-%m-%d %H:%M:%S\n")
-    path = os.environ["SCRATCH_PATH"]
+    name = datetime.datetime.fromtimestamp(note["message"]["date"]) \
+        .strftime("%Y-%m-%d %H:%M:%S.md")
+    path = os.path.join(os.environ["SCRATCH_PATH"], name)
     with open(path, 'a+') as f:
-        f.write(date)
         f.write(text + "\n\n")
 
 maxid = 0
